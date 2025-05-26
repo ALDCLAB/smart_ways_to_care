@@ -3,7 +3,7 @@
 
 [Link to Game](https://aldclab.github.io/smart_ways_to_care/index.html)  
 
-This repo contains the game for ENG100D's Spring 2025 Group B team. Group B is tasked with making an environmentally-focused game to inspire and learn climate actions for the intended younger audience, connecting global environmental challenges to local, relatable, and digestable issues that have personal relevance to the player.  
+This repo contains the game for ENG100D's Spring 2025 Group B team. Group B is tasked with making an environmentally-focused game to inspire and learn climate actions for the intended younger audience, connecting global environmental challenges to local, relatable, and digestible issues that have personal relevance to the player.  
 
 
 The repo right now has the first basic draft version of the game. This current version contains several bugs, such as visual feedback issues and some visual features bugging out when clicking on several screens. There is also no help tab, and there is no further levels other than the first one. 
