@@ -8,7 +8,7 @@ This repo contains the game for ENG100D's Spring 2025 Group B team. Group B is t
 
 The repo right now has the first basic draft version of the game. This current version contains several bugs, such as visual feedback issues and some visual features bugging out when clicking on several screens. There is also no help tab, and there is no further levels other than the first one. 
 
-Things we want and need to add:
+**Things we want and need to add:**
 - Fix the current bugs within the game.
 - Add touch controls for tablet use.
 - Sound effects and feedback to certain actions of the game, as well as background music. The current build of the game has no sound. 
