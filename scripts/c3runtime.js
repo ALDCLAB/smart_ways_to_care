@@ -1091,6 +1091,21 @@ const C3=self.C3;C3.JobSchedulerRuntime=class extends C3.DefendedBase{constructo
 // scripts/shaders.js
 {
 self["C3_Shaders"] = {};
+self["C3_Shaders"]["vignette"] = {
+	glsl: "varying mediump vec2 vTex;\nuniform lowp sampler2D samplerFront;\nuniform mediump vec2 srcStart;\nuniform mediump vec2 srcEnd;\nuniform mediump float vignetteStart;\nuniform mediump float vignetteEnd;\nvoid main(void)\n{\nlowp vec4 front = texture2D(samplerFront, vTex);\nlowp float a = front.a;\nif (a != 0.0)\nfront.rgb /= a;\nmediump vec2 tex = (vTex - srcStart) / (srcEnd - srcStart);\nlowp float d = distance(tex, vec2(0.5, 0.5));\nfront.rgb *= smoothstep(vignetteEnd, vignetteStart, d);\nfront.rgb *= a;\ngl_FragColor = front;\n}",
+	glslWebGL2: "",
+	wgsl: "%%SAMPLERFRONT_BINDING%% var samplerFront : sampler;\n%%TEXTUREFRONT_BINDING%% var textureFront : texture_2d<f32>;\nstruct ShaderParams {\nvignetteStart : f32,\nvignetteEnd : f32\n};\n%%SHADERPARAMS_BINDING%% var<uniform> shaderParams : ShaderParams;\n%%C3PARAMS_STRUCT%%\n%%C3_UTILITY_FUNCTIONS%%\n%%FRAGMENTINPUT_STRUCT%%\n%%FRAGMENTOUTPUT_STRUCT%%\nconst center : vec2<f32> = vec2<f32>(0.5);\n@fragment\nfn main(input : FragmentInput) -> FragmentOutput\n{\nvar front : vec4<f32> = c3_unpremultiply(textureSample(textureFront, samplerFront, input.fragUV));\nvar rgb : vec3<f32> = front.rgb;\nvar tex : vec2<f32> = c3_srcToNorm(input.fragUV);\nvar d : f32 = distance(tex, center);\nrgb = rgb * smoothstep(shaderParams.vignetteEnd, shaderParams.vignetteStart, d);\nvar output : FragmentOutput;\noutput.color = vec4<f32>(rgb * front.a, front.a);\nreturn output;\n}",
+	blendsBackground: false,
+	usesDepth: false,
+	extendBoxHorizontal: 0,
+	extendBoxVertical: 0,
+	crossSampling: false,
+	mustPreDraw: false,
+	preservesOpaqueness: true,
+	supports3dDirectRendering: false,
+	animated: false,
+	parameters: [["vignetteStart",0,"percent"],["vignetteEnd",0,"percent"]]
+};
 
 }
 
@@ -1134,6 +1149,11 @@ const C3=self.C3,GESTURE_HOLD_THRESHOLD=15,GESTURE_HOLD_TIMEOUT=500,GESTURE_TAP_
 {const t=self.C3;t.Plugins.Dictionary=class extends t.SDKPluginBase{constructor(t){super(t)}Release(){super.Release()}}}{const t=self.C3;t.Plugins.Dictionary.Type=class extends t.SDKTypeBase{constructor(t){super(t)}Release(){super.Release()}OnCreate(){}}}{const t=self.C3,e=(self.C3X,self.IInstance);t.Plugins.Dictionary.Instance=class extends t.SDKInstanceBase{constructor(t,e){super(t),this._data=new Map,this._curKey=""}Release(){this._data.clear(),super.Release()}GetAsJsonString(){return JSON.stringify({"c2dictionary":!0,"data":t.MapToObject(this._data)})}GetDataMap(){return this._data}SaveToJson(){return t.MapToObject(this._data)}LoadFromJson(e){t.ObjectToMap(e,this._data)}GetDebuggerProperties(){const t="plugins.dictionary";return[{title:t+".name",properties:[{name:t+".debugger.key-count",value:this._data.size},...[...this._data].map((t=>({name:"$"+t[0],value:t[1],onedit:e=>this._data.set(t[0],e)})))]}]}GetScriptInterfaceClass(){return self.IDictionaryInstance}};const s=new WeakMap;self.IDictionaryInstance=class extends e{constructor(){super(),s.set(this,e._GetInitInst().GetSdkInstance())}getDataMap(){return s.get(this).GetDataMap()}}}{const t=self.C3;t.Plugins.Dictionary.Cnds={CompareValue(e,s,a){const n=this._data.get(e);return void 0!==n&&t.compare(n,s,a)},ForEachKey(){const t=this._runtime,e=t.GetEventSheetManager(),s=t.GetCurrentEvent(),a=s.GetSolModifiers(),n=t.GetEventStack(),r=n.GetCurrentStackFrame(),i=n.Push(s);t.SetDebuggingEnabled(!1);for(const t of this._data.keys()){this._curKey=t,e.PushCopySol(a);this.GetObjectClass().GetCurrentSol().PickOne(this.GetInstance()),s.Retrigger(r,i),e.PopSol(a)}return t.SetDebuggingEnabled(!0),this._curKey="",n.Pop(),!1},CompareCurrentValue(e,s){const a=this._data.get(this._curKey);return void 0!==a&&t.compare(a,e,s)},HasKey(t){return this._data.has(t)},IsEmpty(){return 0===this._data.size}}}{const t=self.C3;t.Plugins.Dictionary.Acts={AddKey(t,e){this._data.set(t,e)},SetKey(t,e){this._data.has(t)&&this._data.set(t,e)},DeleteKey(t){this._data.delete(t)},Clear(){this._data.clear()},JSONLoad(e){let s=null;try{s=JSON.parse(e)}catch(t){return void console.error("[Construct] Error parsing JSON: ",t)}s["c2dictionary"]&&t.ObjectToMap(s["data"],this._data)},JSONDownload(t){const e=URL.createObjectURL(new Blob([this.GetAsJsonString()],{type:"application/json"}));this._runtime.InvokeDownload(e,t)}}}self.C3.Plugins.Dictionary.Exps={Get(t){const e=this._data.get(t);return void 0===e?0:e},GetDefault(t,e){const s=this._data.get(t);return void 0===s?e:s},KeyCount(){return this._data.size},CurrentKey(){return this._curKey},CurrentValue(){return this._data.get(this._curKey)??0},AsJSON(){return this.GetAsJsonString()}};
 }
 
+// scripts/plugins/Audio/c3runtime/runtime.js
+{
+{const t=self.C3,e=[];t.Plugins.Audio=class extends t.SDKPluginBase{constructor(t){super(t)}_AddActionPromise(t){e.push(t)}static async WaitForAllActionPromises(){await Promise.all(e),t.clearArray(e)}Release(){super.Release()}}}{const s=self.C3,i=self.C3X;s.Plugins.Audio.Type=class extends s.SDKTypeBase{constructor(t){super(t)}Release(){super.Release()}OnCreate(){}GetScriptInterfaceClass(){return self.IAudioObjectType}};let a=null;function GetAudioSdkInstance(){return a.GetSingleGlobalInstance().GetSdkInstance()}function GetAudioDOMInterface(){if(self["C3Audio_DOMInterface"])return self["C3Audio_DOMInterface"];throw new Error("audio scripting API cannot be used here - make sure the project is using DOM mode, not worker mode")}self.IAudioObjectType=class extends self.IObjectType{constructor(t){super(t),a=t}get audioContext(){return GetAudioDOMInterface()["GetAudioContextExtern"]()}get destinationNode(){return GetAudioDOMInterface()["GetDestinationNodeExtern"]()}get isSilent(){return GetAudioSdkInstance()._IsSilent()}set isSilent(t){GetAudioSdkInstance()._SetSilent(t)}get masterVolume(){return GetAudioSdkInstance()._GetMasterVolume()}set masterVolume(t){i.RequireFiniteNumber(t),GetAudioSdkInstance()._SetMasterVolume(t)}stopAll(){GetAudioSdkInstance()._StopAll()}}}{const n=self.C3,r="audio",o=["interactive","balanced","playback"];n.Plugins.Audio.Instance=class extends n.SDKInstanceBase{constructor(t,e){super(t,r),this._nextPlayTime=0,this._nextPlayOffset=0,this._triggerTags=[],this._enableMultiTags=!0,this._timeScaleMode=0,this._saveLoadMode=0,this._playInBackground=!1,this._panningModel=1,this._distanceModel=1,this._listenerPos=[this._runtime.GetViewportWidth()/2,this._runtime.GetViewportHeight()/2,600],this._listenerForwardVec=[0,0,-1],this._listenerUpVec=[0,1,0],this._referenceDistance=600,this._maxDistance=1e4,this._rolloffFactor=1,this._listenerInst=null,this._loadListenerUid=-1,this._masterVolume=1,this._isSilent=!1,this._sampleRate=0,this._audioContextState="suspended",this._outputLatency=0,this._effectCount=new Map,this._preloadTotal=0,this._preloadCount=0,this._bufferMetadata=new Map,this._remoteUrls=new Map;let s="interactive";e&&(this._timeScaleMode=e[0],this._saveLoadMode=e[1],this._playInBackground=e[2],s=o[e[3]],this._enableMultiTags=e[4],this._panningModel=e[5],this._distanceModel=e[6],this._listenerPos[2]=e[7],this._referenceDistance=e[8],this._maxDistance=e[9],this._rolloffFactor=e[10]),this._lastAIState=[],this._lastFxState=[],this._lastAnalysersData=[],this.AddDOMMessageHandlers([["state",t=>this._OnUpdateState(t)],["audiocontext-state",t=>this._OnAudioContextStateChanged(t)],["fxstate",t=>this._OnUpdateFxState(t)],["trigger",t=>this._OnTrigger(t)],["buffer-metadata",t=>this._OnBufferMetadata(t)]]);const i=this.GetRuntime().Dispatcher();this._disposables=new n.CompositeDisposable(n.Disposable.From(i,"instancedestroy",(t=>this._OnInstanceDestroyed(t.instance))),n.Disposable.From(i,"afterload",(()=>this._OnAfterLoad())),n.Disposable.From(i,"suspend",(()=>this._OnSuspend())),n.Disposable.From(i,"resume",(()=>this._OnResume())));const a=this._runtime.GetExportType(),l="Safari"===n.Platform.Browser,h=this._runtime.IsiOSWebView()||"macos-wkwebview"===a,u=this._runtime.GetAssetManager().IsFileProtocol(),c="playable-ad-single-file"===this._runtime.GetExportType(),d=l||h||u||c;this._runtime.AddLoadPromise(this.PostToDOMAsync("create-audio-context",{"preloadList":this._runtime.GetAssetManager().GetAudioToPreload().map((t=>({"originalUrl":t.originalUrl,"url":t.url,"type":t.type,"fileSize":t.fileSize}))),"timeScaleMode":this._timeScaleMode,"latencyHint":s,"panningModel":this._panningModel,"distanceModel":this._distanceModel,"refDistance":this._referenceDistance,"maxDistance":this._maxDistance,"rolloffFactor":this._rolloffFactor,"listenerPos":this._listenerPos,"usePlayMusicAsSoundWorkaround":d}).then((t=>{this._sampleRate=t["sampleRate"],this._audioContextState=t["audioContextState"],this._outputLatency=t["outputLatency"]}))),this._StartTicking()}Release(){this._listenerInst=null,super.Release()}_SplitTags(t){return this._enableMultiTags?t.split(" ").filter((t=>!!t)):t?[t]:[]}_MatchTagLists(t,e){for(const s of e){let e=!1;for(const i of t)if(n.equalsNoCase(i,s)){e=!0;break}if(!e)return!1}return!0}_MatchTagListToStr(t,e){return this._MatchTagLists(t,this._SplitTags(e))}_AddActionPromise(t){this.GetPlugin()._AddActionPromise(t)}_OnInstanceDestroyed(t){this._listenerInst===t&&(this._listenerInst=null)}DbToLinearNoCap(t){return Math.pow(10,t/20)}DbToLinear(t){const e=this.DbToLinearNoCap(t);return isFinite(e)?Math.max(Math.min(e,1),0):0}LinearToDbNoCap(t){return Math.log(t)/Math.log(10)*20}LinearToDb(t){return this.LinearToDbNoCap(Math.max(Math.min(t,1),0))}_GetScheduledPlayInfo(){let t=0;const e=!!self["C3_GetAudioContextCurrentTime"];return t=e?this._nextPlayTime:this._nextPlayOffset,this._nextPlayTime=0,this._nextPlayOffset=0,{playOffset:t,isTrueClock:e}}_OnSuspend(){this._playInBackground||this.PostToDOM("set-suspended",{"isSuspended":!0})}_OnResume(){this._playInBackground||this.PostToDOM("set-suspended",{"isSuspended":!1})}_OnUpdateState(t){const e=t["tickCount"];this._outputLatency=t["outputLatency"];const s=this._lastAIState.filter((t=>t.hasOwnProperty("placeholder")&&(t["placeholder"]>e||-1===t["placeholder"])));this._lastAIState=t["audioInstances"],this._lastAnalysersData=t["analysers"],s.length>0&&n.appendArray(this._lastAIState,s)}_OnBufferMetadata(t){this._bufferMetadata.set(t["originalUrl"],{duration:t["duration"]})}_OnAudioContextStateChanged(t){this._audioContextState=t["audioContextState"]}GetAudioContextState(){return this._runtime.IsExportToVideo()?"running":this._audioContextState}_OnUpdateFxState(t){this._lastFxState=t["fxstate"]}_GetFirstAudioStateByTags(t){const e=this._SplitTags(t);for(const t of this._lastAIState)if(this._MatchTagLists(t["tags"],e))return t;return null}_IsTagPlaying(t){const e=this._SplitTags(t);return this._lastAIState.some((t=>this._MatchTagLists(t["tags"],e)&&t["isPlaying"]))}_MaybeMarkAsPlaying(t,e,s,i,a){if(this._IsTagPlaying(e))return null;const n=this._bufferMetadata.get(t),r={"tags":this._SplitTags(e),"duration":n?n.duration:0,"volume":a,"isPlaying":!0,"playbackTime":0,"playbackRate":1,"uid":-1,"bufferOriginalUrl":t,"bufferUrl":"","bufferType":"","isMusic":s,"isLooping":i,"isMuted":!1,"resumePosition":0,"pan":null,"placeholder":-1};return this._lastAIState.push(r),r}_MaybeMarkAsStopped(t){const e=this._SplitTags(t);for(const t of this._lastAIState)this._MatchTagLists(t["tags"],e)&&(t["isPlaying"]=!1)}async _OnTrigger(t){const e=t["type"];this._triggerTags=t["tags"];const s=t["aiid"];if("ended"===e){for(const t of this._lastAIState)if(t["aiid"]===s){t["isPlaying"]=!1;break}await this.TriggerAsync(n.Plugins.Audio.Cnds.OnEnded)}else"fade-ended"===e&&await this.TriggerAsync(n.Plugins.Audio.Cnds.OnFadeEnded)}_MatchTriggerTag(t){return this._MatchTagListToStr(this._triggerTags,t)}Tick(){const t={"timeScale":this._runtime.GetTimeScale(),"gameTime":this._runtime.GetGameTimeRaw(),"instPans":this.GetInstancePans(),"tickCount":this._runtime.GetTickCountNoSave()};if(this._listenerInst){const e=this._listenerInst.GetWorldInfo();this._listenerPos[0]=e.GetX(),this._listenerPos[1]=e.GetY(),t["listenerPos"]=this._listenerPos,t["listenerOrientation"]=[...this._listenerForwardVec,...this._listenerUpVec]}this.PostToDOM("tick",t)}rotatePtAround(t,e,s,i,a){if(0===s)return[t,e];const n=Math.sin(s),r=Math.cos(s),o=(t-=i)*n;return t=t*r-(e-=a)*n,e=e*r+o,[t+=i,e+=a]}GetInstancePans(){return this._lastAIState.filter((t=>-1!==t["uid"])).map((t=>this._runtime.GetInstanceByUID(t["uid"]))).filter((t=>t)).map((t=>{const e=t.GetWorldInfo(),s=e.GetLayer().GetAngle(),[i,a]=this.rotatePtAround(e.GetX(),e.GetY(),-s,this._listenerPos[0],this._listenerPos[1]);return{"uid":t.GetUID(),"x":i,"y":a,"z":e.GetTotalZElevation(),"angle":e.GetAngle()-s}}))}GetAnalyserData(t,e){for(const s of this._lastAnalysersData)if(s.index===e&&n.equalsNoCase(s["tag"],t))return s;return null}_IncrementEffectCount(t){for(const e of this._SplitTags(t)){const t=e.toLowerCase();this._effectCount.set(t,(this._effectCount.get(t)||0)+1)}}_IsSilent(){return this._isSilent}_SetSilent(t){t=!!t,this._isSilent!==t&&(this._isSilent=t,this.PostToDOM("set-silent",{"isSilent":t}))}_GetMasterVolume(){return this._masterVolume}_SetMasterVolume(t){this._masterVolume!==t&&(this._masterVolume=t,this.PostToDOM("set-master-volume",{"vol":t}))}_StopAll(){this.PostToDOM("stop-all");for(const t of this._lastAIState)t["isPlaying"]=!1}_ShouldSave(t){return!t.hasOwnProperty("placeholder")&&(3!==this._saveLoadMode&&((!t["isMusic"]||1!==this._saveLoadMode)&&!(!t["isMusic"]&&2===this._saveLoadMode)))}SaveToJson(){return{"isSilent":this._isSilent,"masterVolume":this._masterVolume,"listenerZ":this._listenerPos[2],"listenerForwardVec":this._listenerForwardVec,"listenerUpVec":this._listenerUpVec,"listenerUid":this._listenerInst?this._listenerInst.GetUID():-1,"remoteUrls":[...this._remoteUrls.entries()],"playing":this._lastAIState.filter((t=>this._ShouldSave(t))),"effects":this._lastFxState,"analysers":this._lastAnalysersData}}LoadFromJson(t){if(this._isSilent=t["isSilent"],this._masterVolume=t["masterVolume"],this._listenerPos[2]=t["listenerZ"],this._listenerInst=null,this._loadListenerUid=t["listenerUid"],t.hasOwnProperty("listenerForwardVec")?this._listenerForwardVec=t["listenerForwardVec"]:this._listenerForwardVec=[0,0,-1],t.hasOwnProperty("listenerUpVec")?this._listenerUpVec=t["listenerUpVec"]:this._listenerUpVec=[0,1,0],this._remoteUrls.clear(),t["remoteUrls"])for(const[e,s]of t["remoteUrls"])this._remoteUrls.set(e,s);this._lastAIState=t["playing"];for(const t of this._lastAIState)t.hasOwnProperty("tag")&&!t.hasOwnProperty("tags")&&(t["tags"]=[t["tag"]].filter((t=>!!t)));this._lastFxState=t["effects"],this._lastAnalysersData=t["analysers"]}_OnAfterLoad(){if(-1!==this._loadListenerUid&&(this._listenerInst=this._runtime.GetInstanceByUID(this._loadListenerUid),this._loadListenerUid=-1,this._listenerInst)){const t=this._listenerInst.GetWorldInfo();this._listenerPos[0]=t.GetX(),this._listenerPos[1]=t.GetY()}for(const t of this._lastAIState){const e=this._runtime.GetAssetManager().GetProjectAudioFileUrl(t["bufferOriginalUrl"]);e?(t["bufferUrl"]=e.url,t["bufferType"]=e.type):t["bufferUrl"]=null}for(const t of Object.values(this._lastFxState))for(const e of t)if(e.hasOwnProperty("bufferOriginalUrl")){const t=this._runtime.GetAssetManager().GetProjectAudioFileUrl(e["bufferOriginalUrl"]);t&&(e["bufferUrl"]=t.url,e["bufferType"]=t.type)}this.PostToDOM("load-state",{"saveLoadMode":this._saveLoadMode,"timeScale":this._runtime.GetTimeScale(),"gameTime":this._runtime.GetGameTimeRaw(),"listenerPos":this._listenerPos,"listenerOrientation":[...this._listenerForwardVec,...this._listenerUpVec],"isSilent":this._isSilent,"masterVolume":this._masterVolume,"playing":this._lastAIState.filter((t=>null!==t["bufferUrl"])),"effects":this._lastFxState})}GetDebuggerProperties(){const t=[];for(const[e,s]of Object.entries(this._lastFxState))t.push({name:"$"+e,value:s.map((t=>t["type"])).join(", ")});const e="plugins.audio.debugger";return[{title:e+".tag-effects",properties:t},{title:e+".currently-playing",properties:[{name:e+".currently-playing-count",value:this._lastAIState.length},...this._lastAIState.map(((t,e)=>({name:"$#"+e,value:`${t["bufferOriginalUrl"]} ("${t["tags"]}") ${Math.round(10*t["playbackTime"])/10} / ${Math.round(10*t["duration"])/10}`})))]}]}}}self.C3.Plugins.Audio.Cnds={OnEnded(t){return this._MatchTriggerTag(t)},OnFadeEnded(t){return this._MatchTriggerTag(t)},PreloadsComplete(){return this._preloadCount===this._preloadTotal},AdvancedAudioSupported:()=>!0,IsSilent(){return this._IsSilent()},IsAnyPlaying(){for(const t of this._lastAIState)if(t["isPlaying"])return!0;return!1},IsTagPlaying(t){return this._IsTagPlaying(t)}};{const l=self.C3,h=["lowpass","highpass","bandpass","lowshelf","highshelf","peaking","notch","allpass"];l.Plugins.Audio.Acts={Play(t,e,s,i,a){const n=l.Plugins.Audio.Acts._DoPlay.call(this,t,e,s,i,a);return this._AddActionPromise(n),n},PlayFromTimeline(t,e,s,i){l.Plugins.Audio.Acts._DoPlay.call(this,t,0,e,0,s,i)},async _DoPlay(t,e,s,i,a,n){if(this._isSilent)return;const r=t[1],o=this._runtime.GetAssetManager().GetProjectAudioFileUrl(t[0]);if(!o)return;const{playOffset:h,isTrueClock:u}=this._GetScheduledPlayInfo(),c=this._MaybeMarkAsPlaying(t[0],a,r,0!==e,this.DbToLinear(s));try{await this.PostToDOMAsync("play",{"originalUrl":t[0],"url":o.url,"type":o.type,"isMusic":r,"tags":this._SplitTags(a),"isLooping":0!==e,"vol":this.DbToLinear(s),"stereoPan":l.clamp(i/100,-1,1),"pos":n||0,"off":h,"trueClock":u})}finally{c&&(c["placeholder"]=this._runtime.GetTickCountNoSave())}},async PlayAtPosition(t,e,s,i,a,n,r,o,h,u,c){if(this._isSilent)return;const d=t[1],_=this._runtime.GetAssetManager().GetProjectAudioFileUrl(t[0]);if(!_)return;const{playOffset:f,isTrueClock:p}=this._GetScheduledPlayInfo(),g=this._MaybeMarkAsPlaying(t[0],c,d,0!==e,this.DbToLinear(s));try{await this.PostToDOMAsync("play",{"originalUrl":t[0],"url":_.url,"type":_.type,"isMusic":d,"tags":this._SplitTags(c),"isLooping":0!==e,"vol":this.DbToLinear(s),"pos":0,"off":f,"trueClock":p,"panning":{"x":i,"y":a,"z":n,"angle":l.toRadians(r),"innerAngle":l.toRadians(o),"outerAngle":l.toRadians(h),"outerGain":this.DbToLinear(u)}})}finally{g&&(g["placeholder"]=this._runtime.GetTickCountNoSave())}},async PlayAtObject(t,e,s,i,a,n,r,o){if(this._isSilent)return;if(!i)return;const h=i.GetFirstPicked();if(!h||!h.GetWorldInfo())return;const u=h.GetWorldInfo(),c=u.GetLayer().GetAngle(),[d,_]=this.rotatePtAround(u.GetX(),u.GetY(),-c,this._listenerPos[0],this._listenerPos[1]),f=t[1],p=this._runtime.GetAssetManager().GetProjectAudioFileUrl(t[0]);if(!p)return;const{playOffset:g,isTrueClock:y}=this._GetScheduledPlayInfo(),m=this._MaybeMarkAsPlaying(t[0],o,f,0!==e,this.DbToLinear(s));try{await this.PostToDOMAsync("play",{"originalUrl":t[0],"url":p.url,"type":p.type,"isMusic":f,"tags":this._SplitTags(o),"isLooping":0!==e,"vol":this.DbToLinear(s),"pos":0,"off":g,"trueClock":y,"panning":{"x":d,"y":_,"z":u.GetTotalZElevation(),"angle":u.GetAngle()-c,"innerAngle":l.toRadians(a),"outerAngle":l.toRadians(n),"outerGain":this.DbToLinear(r),"uid":h.GetUID()}})}finally{m&&(m["placeholder"]=this._runtime.GetTickCountNoSave())}},async PlayByName(t,e,s,i,a,n){if(this._isSilent)return;const r=1===t,o=this._runtime.GetAssetManager().GetProjectAudioFileUrl(e)||this._remoteUrls.get(e.toLowerCase());if(!o)return;const{playOffset:h,isTrueClock:u}=this._GetScheduledPlayInfo(),c=this._MaybeMarkAsPlaying(e,n,r,0!==s,this.DbToLinear(i));try{await this.PostToDOMAsync("play",{"originalUrl":e,"url":o.url,"type":o.type,"isMusic":r,"tags":this._SplitTags(n),"isLooping":0!==s,"vol":this.DbToLinear(i),"stereoPan":l.clamp(a/100,-1,1),"pos":0,"off":h,"trueClock":u})}finally{c&&(c["placeholder"]=this._runtime.GetTickCountNoSave())}},async PlayAtPositionByName(t,e,s,i,a,n,r,o,h,u,c,d){if(this._isSilent)return;const _=1===t,f=this._runtime.GetAssetManager().GetProjectAudioFileUrl(e)||this._remoteUrls.get(e.toLowerCase());if(!f)return;const{playOffset:p,isTrueClock:g}=this._GetScheduledPlayInfo(),y=this._MaybeMarkAsPlaying(e,d,_,0!==s,this.DbToLinear(i));try{await this.PostToDOMAsync("play",{"originalUrl":e,"url":f.url,"type":f.type,"isMusic":_,"tags":this._SplitTags(d),"isLooping":0!==s,"vol":this.DbToLinear(i),"pos":0,"off":p,"trueClock":g,"panning":{"x":a,"y":n,"z":r,"angle":l.toRadians(o),"innerAngle":l.toRadians(h),"outerAngle":l.toRadians(u),"outerGain":this.DbToLinear(c)}})}finally{y&&(y["placeholder"]=this._runtime.GetTickCountNoSave())}},async PlayAtObjectByName(t,e,s,i,a,n,r,o,h){if(this._isSilent)return;if(this._isSilent)return;if(!a)return;const u=a.GetFirstPicked();if(!u||!u.GetWorldInfo())return;const c=u.GetWorldInfo(),d=c.GetLayer().GetAngle(),[_,f]=this.rotatePtAround(c.GetX(),c.GetY(),-d,this._listenerPos[0],this._listenerPos[1]),p=1===t,g=this._runtime.GetAssetManager().GetProjectAudioFileUrl(e)||this._remoteUrls.get(e.toLowerCase());if(!g)return;const{playOffset:y,isTrueClock:m}=this._GetScheduledPlayInfo(),T=this._MaybeMarkAsPlaying(e,h,p,0!==s,this.DbToLinear(i));try{await this.PostToDOMAsync("play",{"originalUrl":e,"url":g.url,"type":g.type,"isMusic":p,"tags":this._SplitTags(h),"isLooping":0!==s,"vol":this.DbToLinear(i),"pos":0,"off":y,"trueClock":m,"panning":{"x":_,"y":f,"z":c.GetTotalZElevation(),"angle":c.GetAngle()-d,"innerAngle":l.toRadians(n),"outerAngle":l.toRadians(r),"outerGain":this.DbToLinear(o),"uid":u.GetUID()}})}finally{T&&(T["placeholder"]=this._runtime.GetTickCountNoSave())}},SetLooping(t,e){this.PostToDOM("set-looping",{"tags":this._SplitTags(t),"isLooping":0===e})},SetMuted(t,e){this.PostToDOM("set-muted",{"tags":this._SplitTags(t),"isMuted":0===e})},SetVolume(t,e){this.PostToDOM("set-volume",{"tags":this._SplitTags(t),"vol":this.DbToLinear(e)})},FadeVolume(t,e,s,i){this.PostToDOM("fade-volume",{"tags":this._SplitTags(t),"vol":this.DbToLinear(e),"duration":s,"stopOnEnd":0===i})},SetStereoPan(t,e){this.PostToDOM("set-stereo-pan",{"tags":this._SplitTags(t),"p":l.clamp(e/100,-1,1)})},async Preload(t){const e=t[1],s=this._runtime.GetAssetManager().GetProjectAudioFileUrl(t[0]);s&&(this._preloadTotal++,await this.PostToDOMAsync("preload",{"originalUrl":t[0],"url":s.url,"type":s.type,"isMusic":e}),this._preloadCount++)},async PreloadByName(t,e){const s=1===t,i=this._runtime.GetAssetManager().GetProjectAudioFileUrl(e)||this._remoteUrls.get(e.toLowerCase());i&&(this._preloadTotal++,await this.PostToDOMAsync("preload",{"originalUrl":e,"url":i.url,"type":i.type,"isMusic":s}),this._preloadCount++)},SetPlaybackRate(t,e){this.PostToDOM("set-playback-rate",{"tags":this._SplitTags(t),"rate":Math.max(e,0)})},Stop(t){this._MaybeMarkAsStopped(t),this.PostToDOM("stop",{"tags":this._SplitTags(t)})},StopAll(){this._StopAll()},SetPaused(t,e){this.PostToDOM("set-paused",{"tags":this._SplitTags(t),"paused":0===e})},Seek(t,e){this.PostToDOM("seek",{"tags":this._SplitTags(t),"pos":e})},SetSilent(t){2===t&&(t=this._IsSilent()?1:0),this._SetSilent(0===t)},SetMasterVolume(t){const e=this.DbToLinear(t);this._SetMasterVolume(e)},AddFilterEffect(t,e,s,i,a,n,r){const o=h[e];this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"filter","tags":this._SplitTags(t),"params":[o,s,i,a,n,l.clamp(r/100,0,1)]})},AddDelayEffect(t,e,s,i){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"delay","tags":this._SplitTags(t),"params":[e,this.DbToLinear(s),l.clamp(i/100,0,1)]})},AddFlangerEffect(t,e,s,i,a,n){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"flanger","tags":this._SplitTags(t),"params":[e/1e3,s/1e3,i,a/100,l.clamp(n/100,0,1)]})},AddPhaserEffect(t,e,s,i,a,n,r){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"phaser","tags":this._SplitTags(t),"params":[e,s,i,a,n,l.clamp(r/100,0,1)]})},AddConvolutionEffect(t,e,s,i){const a=this._runtime.GetAssetManager().GetProjectAudioFileUrl(e[0]);a&&(this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"convolution","tags":this._SplitTags(t),"bufferOriginalUrl":e[0],"bufferUrl":a.url,"bufferType":a.type,"params":[0===s,l.clamp(i/100,0,1)]}))},AddGainEffect(t,e){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"gain","tags":this._SplitTags(t),"params":[this.DbToLinear(e)]})},AddStereoPanEffect(t,e){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"stereopan","tags":this._SplitTags(t),"params":[l.clamp(e/100,-1,1)]})},AddMuteEffect(t){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"gain","tags":this._SplitTags(t),"params":[0]})},AddTremoloEffect(t,e,s){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"tremolo","tags":this._SplitTags(t),"params":[e,l.clamp(s/100,0,1)]})},AddRingModEffect(t,e,s){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"ringmod","tags":this._SplitTags(t),"params":[e,l.clamp(s/100,0,1)]})},AddDistortionEffect(t,e,s,i,a,n){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"distortion","tags":this._SplitTags(t),"params":[this.DbToLinearNoCap(e),this.DbToLinearNoCap(s),i,this.DbToLinearNoCap(a),l.clamp(n/100,0,1)]})},AddCompressorEffect(t,e,s,i,a,n){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"compressor","tags":this._SplitTags(t),"params":[e,s,i,a/1e3,n/1e3]})},AddAnalyserEffect(t,e,s){this._IncrementEffectCount(t),this.PostToDOM("add-effect",{"type":"analyser","tags":this._SplitTags(t),"params":[e,s]})},RemoveEffects(t){const e=this._SplitTags(t);for(const t of e)this._effectCount.set(t.toLowerCase(),0);this.PostToDOM("remove-effects",{"tags":e}),this._lastFxState={}},SetEffectParameter(t,e,s,i,a,n){this.PostToDOM("set-effect-param",{"tags":this._SplitTags(t),"index":Math.floor(e),"param":s,"value":i,"ramp":a,"time":n})},SetListenerObject(t){if(!t)return;const e=t.GetFirstPicked();e&&e.GetWorldInfo()&&(this._listenerInst=e)},SetListenerZ(t){this._listenerPos[2]=t},SetListenerOrientation(t,e,s,i,a,n){this._listenerForwardVec[0]=t,this._listenerForwardVec[1]=e,this._listenerForwardVec[2]=-s,this._listenerUpVec[0]=i,this._listenerUpVec[1]=a,this._listenerUpVec[2]=-n},ScheduleNextPlay(t){this._nextPlayTime=Math.max(t,0),this._nextPlayOffset=Math.max(t-performance.now()/1e3,0)},UnloadAudio(t){const e=t[1],s=this._runtime.GetAssetManager().GetProjectAudioFileUrl(t[0]);s&&this.PostToDOM("unload",{"url":s.url,"type":s.type,"isMusic":e})},UnloadAudioByName(t,e){const s=1===t,i=this._runtime.GetAssetManager().GetProjectAudioFileUrl(e)||this._remoteUrls.get(e.toLowerCase());i&&this.PostToDOM("unload",{"url":i.url,"type":i.type,"isMusic":s})},UnloadAll(){this.PostToDOM("unload-all")},AddRemoteURL(t,e,s){this._remoteUrls.set(s.toLowerCase(),{url:t,type:e})}}}{const u=self.C3;u.Plugins.Audio.Exps={Duration(t){const e=this._GetFirstAudioStateByTags(t);return e?e["duration"]:0},PlaybackTime(t){const e=this._GetFirstAudioStateByTags(t);return e?e["playbackTime"]:0},PlaybackRate(t){const e=this._GetFirstAudioStateByTags(t);return e?e["playbackRate"]:0},Volume(t){const e=this._GetFirstAudioStateByTags(t);return e?this.LinearToDb(e["volume"]):0},MasterVolume(){return this.LinearToDb(this._GetMasterVolume())},EffectCount(t){return this._effectCount.get(t.toLowerCase())||0},AnalyserFreqBinCount(t,e){const s=this.GetAnalyserData(t,Math.floor(e));return s?s["binCount"]:0},AnalyserFreqBinAt(t,e,s){const i=this.GetAnalyserData(t,Math.floor(e));return i?(s=Math.floor(s))<0||s>=i["binCount"]?0:i["freqBins"][s]:0},AnalyserPeakLevel(t,e){const s=this.GetAnalyserData(t,Math.floor(e));return s?s["peak"]:0},AnalyserRMSLevel(t,e){const s=this.GetAnalyserData(t,Math.floor(e));return s?s["rms"]:0},SampleRate(){return this._sampleRate},CurrentTime:()=>self["C3_GetAudioContextCurrentTime"]?self["C3_GetAudioContextCurrentTime"]():performance.now()/1e3,OutputLatency(){return this._outputLatency},NormalizedVolume(t,e){return 0===(t=u.clamp(+t,0,100)/100)?-1/0:t<.1?this.LinearToDb(u.lerp(0,this.DbToLinear(e),10*t)):u.lerp(e,0,(t-.1)/.9)}}}
+}
+
 // scripts/behaviors/wrap/c3runtime/runtime.js
 {
 {const e=self.C3;e.Behaviors.wrap=class extends e.SDKBehaviorBase{constructor(e){super(e)}Release(){super.Release()}}}{const e=self.C3;e.Behaviors.wrap.Type=class extends e.SDKBehaviorTypeBase{constructor(e){super(e)}Release(){super.Release()}OnCreate(){}}}{const e=self.C3,t=0,s=new e.Rect;e.Behaviors.wrap.Instance=class extends e.SDKBehaviorInstanceBase{constructor(e,s){super(e),this._mode=0,s&&(this._mode=s[t]),this._StartTicking()}Release(){super.Release()}SaveToJson(){return{"m":this._mode}}LoadFromJson(e){this._mode=e["m"]}Tick(){const t=this._inst.GetWorldInfo(),o=t.GetLayer(),r=o.GetLayout(),a=t.GetBoundingBox();0===this._mode?s.set(0,0,r.GetWidth(),r.GetHeight()):s.copy(o.GetViewport());let i=!1;a.getRight()<s.getLeft()?(t.SetX(s.getRight()-1+(t.GetX()-a.getLeft())),t.SetBboxChanged(),i=!0):a.getLeft()>s.getRight()?(t.SetX(s.getLeft()+1-(a.getRight()-t.GetX())),t.SetBboxChanged(),i=!0):a.getBottom()<s.getTop()?(t.SetY(s.getBottom()-1+(t.GetY()-a.getTop())),t.SetBboxChanged(),i=!0):a.getTop()>s.getBottom()&&(t.SetY(s.getTop()+1-(a.getBottom()-t.GetY())),t.SetBboxChanged(),i=!0),i&&this.Trigger(e.Behaviors.wrap.Cnds.OnWrap)}GetPropertyValueByIndex(e){if(e===t)return this._mode}SetPropertyValueByIndex(e,s){if(e===t)this._mode=s}}}self.C3.Behaviors.wrap.Cnds={OnWrap:()=>!0};self.C3.Behaviors.wrap.Acts={};self.C3.Behaviors.wrap.Exps={};
@@ -1142,6 +1162,11 @@ const C3=self.C3,GESTURE_HOLD_THRESHOLD=15,GESTURE_HOLD_TIMEOUT=500,GESTURE_TAP_
 // scripts/behaviors/DragnDrop/c3runtime/runtime.js
 {
 {const e=self.C3;e.Behaviors.DragnDrop=class extends e.SDKBehaviorBase{constructor(t){super(t);const s=this._runtime.Dispatcher();this._disposables=new e.CompositeDisposable(e.Disposable.From(s,"pointerdown",(e=>this._OnPointerDown(e.data))),e.Disposable.From(s,"pointermove",(e=>this._OnPointerMove(e.data))),e.Disposable.From(s,"pointerup",(e=>this._OnPointerUp(e.data,!1))),e.Disposable.From(s,"pointercancel",(e=>this._OnPointerUp(e.data,!0))))}Release(){this._disposables.Release(),this._disposables=null,super.Release()}_OnPointerDown(e){"mouse"===e["pointerType"]&&0!==e["button"]||this._OnInputDown(e["pointerId"].toString(),e["pageX"]-this._runtime.GetCanvasClientX(),e["pageY"]-this._runtime.GetCanvasClientY())}_OnPointerMove(e){1&e["lastButtons"]&&!(1&e["buttons"])?this._OnInputUp(e["pointerId"].toString()):this._OnInputMove(e["pointerId"].toString(),e["pageX"]-this._runtime.GetCanvasClientX(),e["pageY"]-this._runtime.GetCanvasClientY())}_OnPointerUp(e,t){"mouse"===e["pointerType"]&&0!==e["button"]||this._OnInputUp(e["pointerId"].toString())}async _OnInputDown(t,s,n){const a=this.GetInstances();let r=null,i=null,o=0,h=0;for(const t of a){const a=t.GetBehaviorSdkInstanceFromCtor(e.Behaviors.DragnDrop);if(!a.IsEnabled()||a.IsDragging()||t.IsDestroyed())continue;const g=t.GetWorldInfo(),l=g.GetLayer(),[p,d]=l.CanvasCssToLayer(s,n,g.GetTotalZElevation());if(!l.IsSelfAndParentsInteractive()||!g.ContainsPoint(p,d))continue;if(!r){r=t,i=a,o=p,h=d;continue}const c=r.GetWorldInfo();(l.GetIndex()>c.GetLayer().GetIndex()||l.GetIndex()===c.GetLayer().GetIndex()&&g.GetZIndex()>c.GetZIndex())&&(r=t,i=a,o=p,h=d)}r&&await i._OnDown(t,o,h)}_OnInputMove(t,s,n){const a=this.GetInstances();for(const r of a){const a=r.GetBehaviorSdkInstanceFromCtor(e.Behaviors.DragnDrop);if(!a.IsEnabled()||!a.IsDragging()||a.IsDragging()&&a.GetDragSource()!==t)continue;const i=r.GetWorldInfo(),o=i.GetLayer(),[h,g]=o.CanvasCssToLayer(s,n,i.GetTotalZElevation());a._OnMove(h,g)}}async _OnInputUp(t){const s=this.GetInstances();for(const n of s){const s=n.GetBehaviorSdkInstanceFromCtor(e.Behaviors.DragnDrop);s.IsDragging()&&s.GetDragSource()===t&&await s._OnUp()}}}}{const e=self.C3;e.Behaviors.DragnDrop.Type=class extends e.SDKBehaviorTypeBase{constructor(e){super(e)}Release(){super.Release()}OnCreate(){}}}{const e=self.C3,t=(self.C3X,self.IBehaviorInstance),s=0,n=1;e.Behaviors.DragnDrop.Instance=class extends e.SDKBehaviorInstanceBase{constructor(e,t){super(e),this._isDragging=!1,this._dx=0,this._dy=0,this._dragSource="<none>",this._axes=0,this._isEnabled=!0,t&&(this._axes=t[s],this._isEnabled=t[n])}Release(){super.Release()}SaveToJson(){return{"a":this._axes,"e":this._isEnabled}}LoadFromJson(e){this._axes=e["a"],this._isEnabled=e["e"],this._isDragging=!1}_SetEnabled(e){this._isEnabled=!!e,this._isEnabled||(this._isDragging=!1)}IsEnabled(){return this._isEnabled}_SetAxes(e){this._axes=e}_GetAxes(){return this._axes}_Drop(){this._isDragging&&this._OnUp()}IsDragging(){return this._isDragging}GetDragSource(){return this._dragSource}async _OnDown(t,s,n){const a=this.GetWorldInfo();this._dx=s-a.GetX(),this._dy=n-a.GetY(),this._isDragging=!0,this._dragSource=t,this.DispatchScriptEvent("dragstart"),await this.TriggerAsync(e.Behaviors.DragnDrop.Cnds.OnDragStart)}_OnMove(e,t){const s=this.GetWorldInfo(),n=e-this._dx,a=t-this._dy;0===this._axes?s.GetX()===n&&s.GetY()===a||(s.SetXY(n,a),s.SetBboxChanged()):1===this._axes?s.GetX()!==n&&(s.SetX(n),s.SetBboxChanged()):2===this._axes&&s.GetY()!==a&&(s.SetY(a),s.SetBboxChanged())}async _OnUp(){this._isDragging=!1,this.DispatchScriptEvent("drop"),await this.TriggerAsync(e.Behaviors.DragnDrop.Cnds.OnDrop)}GetPropertyValueByIndex(e){switch(e){case s:return this._GetAxes();case n:return this.IsEnabled()}}SetPropertyValueByIndex(e,t){switch(e){case s:this._SetAxes(t);break;case n:this._SetEnabled(!!t)}}GetDebuggerProperties(){const e="behaviors.dragndrop",t=e+".properties.axes";let s="";return 0===this._axes?s=t+".items.both":1===this._axes?s=t+".items.horizontal-only":2===this._axes&&(s=t+".items.vertical-only"),[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:e+".debugger.is-dragging",value:this.IsDragging()},{name:t+".name",value:[s]},{name:e+".properties.enabled.name",value:this.IsEnabled(),onedit:e=>this._SetEnabled(e)}]}]}GetScriptInterfaceClass(){return self.IDragDropBehaviorInstance}};const a=new WeakMap,r=["both","horizontal","vertical"];self.IDragDropBehaviorInstance=class extends t{constructor(){super(),a.set(this,t._GetInitInst().GetSdkInstance())}set axes(e){const t=r.indexOf(e);if(-1===t)throw new Error("invalid axes");a.get(this)._SetAxes(t)}get axes(){return r[a.get(this)._GetAxes()]}drop(){a.get(this)._Drop()}get isDragging(){return a.get(this).IsDragging()}get isEnabled(){return a.get(this).IsEnabled()}set isEnabled(e){a.get(this)._SetEnabled(e)}}}self.C3.Behaviors.DragnDrop.Cnds={IsDragging(){return this.IsDragging()},OnDragStart:()=>!0,OnDrop:()=>!0,IsEnabled(){return this.IsEnabled()}};self.C3.Behaviors.DragnDrop.Acts={SetEnabled(e){this._SetEnabled(!!e)},SetAxes(e){this._SetAxes(e)},Drop(){this._Drop()}};self.C3.Behaviors.DragnDrop.Exps={};
+}
+
+// scripts/behaviors/Persist/c3runtime/runtime.js
+{
+{const e=self.C3;e.Behaviors.Persist=class extends e.SDKBehaviorBase{constructor(e){super(e)}Release(){super.Release()}}}{const e=self.C3;e.Behaviors.Persist.Type=class extends e.SDKBehaviorTypeBase{constructor(e){super(e)}Release(){super.Release()}OnCreate(){}}}{const e=self.C3;e.Behaviors.Persist.Instance=class extends e.SDKBehaviorInstanceBase{constructor(e,s){super(e)}Release(){super.Release()}}}self.C3.Behaviors.Persist.Cnds={};self.C3.Behaviors.Persist.Acts={};self.C3.Behaviors.Persist.Exps={};
 }
 
 // scripts/behaviors/Sin/c3runtime/runtime.js
@@ -1251,28 +1276,32 @@ self.C3_ExpressionFuncs = [
 		() => 0.2,
 		() => 100,
 		() => 50,
+		() => "",
+		() => 1,
+		() => 2,
+		() => -30,
+		() => "grocerystore",
+		() => 3,
+		() => 4,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => Math.round(f0(0, 6));
 		},
 		() => "There is a thick layer named 'blubber' that seals have under their skin to keep them warm and comfy!",
-		() => 1,
 		() => "The ocean absorbs most of the heat we produce!",
-		() => 2,
 		() => "We are losing 1.2 trillion tons of ice each year because of climate change :(",
-		() => 3,
-		() => "Plastic bags take about 20 years to decompose, while other plastics can take hundreds of years.",
-		() => 4,
-		() => "In 2016, 11% of plastic waste entered aquatic ecosystem.",
+		() => "Plastic bags take about 20 years to decompose and disappear, while other plastics can take hundreds of years.",
+		() => "In 2016, 11% of plastic waste entered the aquatic ecosystem.",
 		() => 5,
-		() => "88% of San Diego's intertidal zones contain plastic debris.",
+		() => "88% of San Diego's shores contain plastic waste.",
 		() => 6,
 		() => "Using reusable grocery bags not only saves the environment, but also can save you money!",
-		() => 75,
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpInstVar();
 		},
+		() => -10,
+		() => 75,
 		() => 762,
 		() => 35,
 		() => 774,
@@ -1280,20 +1309,28 @@ self.C3_ExpressionFuncs = [
 		() => 805,
 		() => 817,
 		() => 7,
-		() => 15,
+		() => 0.75,
+		() => 9,
+		() => 18,
+		() => "Hello friend! When you are ready, tap to continue!",
+		() => "This is the beach, our home!",
+		() => "Oh no!! Someone littered and left trash all over the place!",
+		() => "Animals that mistake trash as food and accidentally eat it are in danger!",
 		() => "Please help us clean our home!",
 		() => "However, lets learn first on how to clean them!",
 		() => "smart",
-		() => "You should put things in the trash bin if they cannot be recycled or turned into materials!",
+		() => "Put things in the trash bin if they cannot be recycled or turned into materials!",
 		() => 117,
 		() => 144,
 		() => 450,
 		() => 275,
-		() => "Clean things that can be made into something new should go in the recycling bin!",
+		() => "Common, cleanable materials should go in the recycling bin to be transformed into new products!",
 		() => 78,
 		() => 96,
 		() => 580,
 		() => 280,
+		() => "Vignette",
+		() => 8,
 		() => "And here is the compost bin! Food bits and other things such as plants and materials should be put here!",
 		() => 680,
 		() => 10,
@@ -1303,36 +1340,42 @@ self.C3_ExpressionFuncs = [
 		() => 780,
 		() => 12,
 		() => 758,
-		() => 665,
-		() => 18,
 		() => "standard",
 		() => "You sorted out all the trash! Great job!",
 		() => 1281,
 		() => 110,
-		() => 16,
+		() => 19,
 		() => "Thank you! The beaches look all clean now!",
-		() => 17,
+		() => 20,
+		() => "You earned some coins by cleaning! You can buy items in the shop now!",
+		() => 175,
+		() => 462,
+		() => 161,
+		() => "You can go to the shop by clicking this button! Thank you again!",
+		() => 350,
+		() => 226,
+		() => 196,
+		() => 22,
 		() => "Not exactly... Some people throw them in the trash but there is a better place to put them!",
 		() => 419,
 		() => 406,
 		() => "incorrect",
-		() => "Incorrect... please try again! Apple cores are not recyclable.",
+		() => "Not quite! Apple cores aren’t recyclable. They’re food, not materials like paper or plastic. Try again!",
 		() => 419.825833,
 		() => 406.359546,
 		() => "Correct! Apple cores go in the compost bin. They're leftover food that breaks down and helps make healthy soil!",
-		() => 20,
 		() => 111,
 		() => "correct",
 		() => "Not exactly... juice containers are usually accepted in trash cans, but there's a better place to put them in!",
 		() => 215,
 		() => 414,
 		() => "Correct! Many juice container types are usually able to be recycled! Just make sure there is no more juice!",
-		() => "Not exactly... juice containers are usually made from materials like plastic that won’t break down naturally.",
+		() => "Not quite! Juice boxes don’t belong in the compost. They don’t break down like food or paper. Give it another shot!",
 		() => "Not exactly... Please try again. Some people throw them in the trash but there is a better place to put them in!",
 		() => 808,
 		() => 381,
-		() => "Incorrect... Please try again. Banana peels are not recyclable.",
-		() => "Correct! Banana peels go in the compost bin. They're natural food waste that breaks down easily and helps the soil be healthy.",
+		() => "Not exactly…Banana peels can't be recycled like paper.",
+		() => "Correct! Banana peels go in the compost bin because they break down naturally and help make healthy soil!",
 		() => "Not exactly... Some people toss them in the trash, but one of the others is better to put bottle caps in!",
 		() => 723,
 		() => 428,
@@ -1344,21 +1387,45 @@ self.C3_ExpressionFuncs = [
 		() => "Incorrect...  Pizza boxes are usually cardboard but they are usually filled with food scraps and other stuff that can't be recycled!",
 		() => "Correct! Pizza boxes are accepted in compost bins as there is plenty of leftover food scraps and oil grease in them!",
 		() => 30,
-		() => " Correct! Chip bags go in the trash. They're made of things that can’t be recycled or composted.",
-		() => " Not exactly... Some people think chip bags go in recycling, but they don’t. They can’t be reused.",
+		() => "Correct! Even though chip bags look shiny like foil, they’re made from layers of plastic and metal that can’t be recycled or composted.",
+		() => "Almost! Chip bags might look recyclable, but they’re made of mixed materials that most recycling centers can’t handle. Try again!",
 		() => 629,
 		() => 405,
-		() => "Incorrect... Please try again! Chip bags don’t belong in compost, as they’re not food and won’t break down in the soil.",
-		() => "Correct! Yogurt packs go in the trash bin. They’re made of special plastic that can’t be recycled.",
-		() => "Incorrect... please try again! They are made of plastic, but made of multiple plastics that are too complex to recycle! ",
+		() => "Not quite! Chip bags don’t break down like food or paper, so they don’t belong in the compost. Want to give it another try?",
+		() => "Correct! Yogurt packs go in the trash bin. They’re made of special laminated plastic that can’t be recycled.",
+		() => "Not quite! Yogurt tube packs look recyclable, but they’re made of special plastic that can’t be recycled. Give it another shot!",
 		() => 471,
 		() => 404,
-		() => "Incorrect... please try again! The packs themselves aren’t made of food or plants, so they won’t turn into dirt.",
+		() => "Oops! Yogurt tube packs don’t belong in compost—they’re plastic and won’t break down like food. Try again!",
 		() => "Not exactly, some people throw them in the trash, but there's a better place to put them!",
 		() => 101,
 		() => 412,
 		() => " Correct! Milk cartons go in the recycling bin. They’re made of paper and plastic layers that can be recycled.",
-		() => "Incorrect... please try again! Most milk cartons has many materials inside and won't be able to break down"
+		() => 15,
+		() => "Incorrect... please try again! Most milk cartons has many materials inside and won't be able to break down",
+		() => 449,
+		() => 230,
+		() => 138,
+		() => 351,
+		() => 61,
+		() => 235,
+		() => 95,
+		() => 433,
+		() => 282,
+		() => 141,
+		() => 391,
+		() => 741,
+		() => 753,
+		() => 69,
+		() => "Trash",
+		() => 597,
+		() => 788,
+		() => "Most materials can be sent to the trash after a bit of learning and research! \n\nStuff like plastic wrappers, utensils, and bags!",
+		() => "Recycle",
+		() => "Common, cleanable materials that can be sent away to be transformed into new products and items!\n\nStuff like aluminum, cardboard, paper cartons and plastic bottles!",
+		() => "Compost",
+		() => "Natural foods can be turned into rich, reusable nutrients!\n\nStuff like food scraps, plants, yard waste, food-soiled paper!",
+		() => -1
 ];
 
 
