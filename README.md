@@ -10,6 +10,6 @@ The repo right now has version 3 of the game, which contains the full original g
 
 Music: "Grocery Store" By HeatleyBros  
 
-[Link To Music](https://youtu.be/vOXe03RL71M?si=uQZeioFWWKEDqe7B)  
+[Link to the game's background music](https://youtu.be/vOXe03RL71M?si=uQZeioFWWKEDqe7B)  
 
 
